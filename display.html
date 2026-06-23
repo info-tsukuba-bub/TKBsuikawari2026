@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スイカ割りディスプレイ</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%;
+            background: #000; color: #fff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+
+        .screen {
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 16px;
+            position: relative;
+        }
+
+        /* チームラベル */
+        .team-label {
+            position: fixed; top: 20px; left: 0; right: 0;
+            text-align: center; font-size: 1.1rem; font-weight: bold; letter-spacing: 0.3em;
+        }
+        .team-a { color: #4fc3f7; }
+        .team-b { color: #f06292; }
+
+        /* ステップカウンター */
+        .step-counter {
+            position: fixed; bottom: 24px; left: 0; right: 0;
+            text-align: center; font-size: 2.8vw; color: #444; letter-spacing: 0.2em;
+        }
+
+        /* ─── 待機 ─── */
+        .waiting-text { font-size: 4.5vw; color: #333; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+        /* ─── 移動コマンド（forward/back） ─── */
+        .move-arrow   { font-size: 28vw; line-height:1; margin-bottom: 3vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .move-text    { font-size: 8vw; font-weight: 900; color: #fff; margin-bottom: 1.5vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .move-size    { font-size: 3.5vw; color: #aaa; letter-spacing: 0.1em; }
+        @keyframes pop { 0%{transform:scale(0.4);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+        /* ─── 方向転換コマンド（right/left）+ コンパス ─── */
+        .turn-text     { font-size: 7vw; font-weight: 900; color: #fff; margin-bottom: 3vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .compass-wrap  { display: flex; flex-direction: column; align-items: center; gap: 2vh; }
+        .compass-svg   { width: min(45vw, 45vh); height: min(45vw, 45vh); }
+        .compass-label { font-size: 2.8vw; color: #888; letter-spacing: 0.1em; }
+
+        /* ─── swing ─── */
+        .swing-emoji  { font-size: 32vw; line-height:1; margin-bottom: 3vh; animation: swing-anim 0.4s ease-out; }
+        .swing-text   { font-size: 9vw; font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,0.8); animation: swing-anim 0.4s ease-out; }
+        @keyframes swing-anim { 0%{transform:rotate(-25deg) scale(0.7);opacity:0.5} 60%{transform:rotate(15deg) scale(1.15)} 100%{transform:rotate(0deg) scale(1);opacity:1} }
+
+        /* ─── 止まれ ─── */
+        .stop-emoji   { font-size: 28vw; line-height:1; margin-bottom: 3vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .stop-text    { font-size: 8vw; font-weight: 900; color: #ffd700; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+
+        /* ─── 完了 ─── */
+        .complete-emoji { font-size: 18vw; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .complete-text  { font-size: 6.5vw; font-weight: 900; color: #ffd700; margin-top: 3vh; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275) 0.1s both; }
+        @keyframes bounce { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+        /* ─── swing フラッシュ背景 ─── */
+        .flash { animation: flash-bg 0.4s ease-out; }
+        @keyframes flash-bg { 0%{background:#6b0000} 100%{background:#000} }
+    </style>
+</head>
+<body>
+    <div id="screen" class="screen">
+        <div class="team-label" id="teamLabel">TEAM A</div>
+        <div class="waiting-text">スタンバイ中...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+        // ============================================================
+        // ⚠️  ここにFirebaseの設定を貼り付けてください（input.htmlと同じ）
+        // ============================================================
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDqdgtSJx00_hzKIP0nEOW6JfQVWgZ9plk",
+            authDomain:        "bub-suikawari.firebaseapp.com",
+            databaseURL:       "https://bub-suikawari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "bub-suikawari",
+            storageBucket:     "bub-suikawari.firebasestorage.app",
+            messagingSenderId: "115524577908",
+            appId:             "1:115524577908:web:dbcbe4cd300a184a287f21"
+        };
+        // ============================================================
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        const params  = new URLSearchParams(window.location.search);
+        const team    = (params.get('team') || 'a').toLowerCase();
+        const teamKey = `team${team.toUpperCase()}`;
+        const teamName = team === 'a' ? 'TEAM A' : 'TEAM B';
+
+        const teamLabelEl = document.getElementById('teamLabel');
+        teamLabelEl.textContent = teamName;
+        teamLabelEl.className   = `team-label team-${team}`;
+
+        // ─── TTS ───────────────────────────────────────────────
+        function speak(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const u  = new SpeechSynthesisUtterance(text);
+            u.lang   = 'ja-JP';
+            u.rate   = 0.88;
+            u.pitch  = 1.0;
+            u.volume = 1.0;
+            window.speechSynthesis.speak(u);
+        }
+
+        function buildSpeechText(item) {
+            switch (item.type) {
+                case 'forward': return `前に${item.value}センチ`;
+                case 'back':    return `後ろに${item.value}センチ`;
+                case 'right':   return `右に${item.value}度、回転`;
+                case 'left':    return `左に${item.value}度、回転`;
+                case 'stop':    return '止まれ';
+                case 'swing':   return 'スイカを割れ！';
+                default:        return item.label || '';
+            }
+        }
+
+        // ─── コンパスSVGの生成 ─────────────────────────────────
+        // targetDeg: ロボットが向くべき方向（0=北, 90=東, 180=南, 270=西）
+        // fromDeg:   現在の向き（ターン前）
+        function buildCompass(fromDeg, targetDeg) {
+            const cx = 50, cy = 50, r = 42;
+
+            // 現在の向き（薄い矢印）
+            const fromRad = (fromDeg - 90) * Math.PI / 180;
+            const fx1 = cx + 28 * Math.cos(fromRad);
+            const fy1 = cy + 28 * Math.sin(fromRad);
+            const fx2 = cx + 15 * Math.cos(fromRad + 2.4);
+            const fy2 = cy + 15 * Math.sin(fromRad + 2.4);
+            const fx3 = cx + 15 * Math.cos(fromRad - 2.4);
+            const fy3 = cy + 15 * Math.sin(fromRad - 2.4);
+
+            // 目標の向き（明るい矢印）
+            const toRad = (targetDeg - 90) * Math.PI / 180;
+            const tx1 = cx + 36 * Math.cos(toRad);
+            const ty1 = cy + 36 * Math.sin(toRad);
+            const tx2 = cx + 20 * Math.cos(toRad + 2.1);
+            const ty2 = cy + 20 * Math.sin(toRad + 2.1);
+            const tx3 = cx + 20 * Math.cos(toRad - 2.1);
+            const ty3 = cy + 20 * Math.sin(toRad - 2.1);
+
+            // N/E/S/W ラベル位置
+            const labels = [
+                { txt:'N', x: 50, y:  7, fill:'#ff6b6b' },
+                { txt:'E', x: 93, y: 54, fill:'#aaa' },
+                { txt:'S', x: 50, y: 97, fill:'#aaa' },
+                { txt:'W', x:  7, y: 54, fill:'#aaa' },
+            ];
+
+            return `
+            <svg class="compass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- 外枠 -->
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#222" stroke-width="2"/>
+                <!-- 目盛り線 -->
+                ${[0,45,90,135,180,225,270,315].map(a => {
+                    const ar = (a-90)*Math.PI/180;
+                    const x1 = cx+(r-5)*Math.cos(ar), y1 = cy+(r-5)*Math.sin(ar);
+                    const x2 = cx+r*Math.cos(ar),     y2 = cy+r*Math.sin(ar);
+                    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#333" stroke-width="1"/>`;
+                }).join('')}
+                <!-- N/E/S/W -->
+                ${labels.map(l=>`<text x="${l.x}" y="${l.y}" text-anchor="middle" dominant-baseline="middle" fill="${l.fill}" font-size="7" font-weight="bold">${l.txt}</text>`).join('')}
+                <!-- 現在の向き（薄いグレー） -->
+                <polygon points="${fx1},${fy1} ${fx2},${fy2} ${fx3},${fy3}" fill="#444"/>
+                <!-- 目標の向き（明るい色） -->
+                <polygon points="${tx1},${ty1} ${tx2},${ty2} ${tx3},${ty3}" fill="#4fc3f7"/>
+                <!-- 中心点 -->
+                <circle cx="${cx}" cy="${cy}" r="3" fill="#666"/>
+            </svg>`;
+        }
+
+        // ─── 現在の向きだけ表示するコンパス（移動コマンド用） ──
+        function buildMovingCompass(facingDeg) {
+            const cx = 50, cy = 50, r = 42;
+            const toRad = (facingDeg - 90) * Math.PI / 180;
+            const tx1 = cx + 36 * Math.cos(toRad), ty1 = cy + 36 * Math.sin(toRad);
+            const tx2 = cx + 20 * Math.cos(toRad + 2.1), ty2 = cy + 20 * Math.sin(toRad + 2.1);
+            const tx3 = cx + 20 * Math.cos(toRad - 2.1), ty3 = cy + 20 * Math.sin(toRad - 2.1);
+            const labels = [
+                { txt:'N', x:50, y:7,  fill:'#ff6b6b' },
+                { txt:'E', x:93, y:54, fill:'#aaa' },
+                { txt:'S', x:50, y:97, fill:'#aaa' },
+                { txt:'W', x:7,  y:54, fill:'#aaa' },
+            ];
+            return `
+            <svg class="compass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#222" stroke-width="2"/>
+                ${labels.map(l=>`<text x="${l.x}" y="${l.y}" text-anchor="middle" dominant-baseline="middle" fill="${l.fill}" font-size="7" font-weight="bold">${l.txt}</text>`).join('')}
+                <polygon points="${tx1},${ty1} ${tx2},${ty2} ${tx3},${ty3}" fill="#2a9d8f"/>
+                <circle cx="${cx}" cy="${cy}" r="3" fill="#666"/>
+            </svg>`;
+        }
+
+        // ─── 画面レンダリング ────────────────────────────────────
+
+        function showWaiting() {
+            const s = document.getElementById('screen');
+            s.className = 'screen';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="waiting-text">スタンバイ中...</div>`;
+        }
+
+        function showMove(item, stepNum, total) {
+            const arrow   = item.type === 'forward' ? '↑' : '↓';
+            const dir     = item.type === 'forward' ? '前に' : '後ろに';
+            const squares = item.value / 40; // 何マス分か
+            const facing  = item.facingAfter ?? 0;
+            const s = document.getElementById('screen');
+            s.className = 'screen';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="move-arrow">${arrow}</div>
+                <div class="move-text">${dir}${item.value}cm</div>
+                <div class="move-size">${squares}マス分（グリッド1マス = 40cm）</div>
+                <div style="margin-top:3vh">${buildMovingCompass(facing)}</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`;
+        }
+
+        function showTurn(item, stepNum, total) {
+            const arrow     = item.type === 'right' ? '↻' : '↺';
+            const direction = item.type === 'right' ? '右' : '左';
+            const fromDeg   = item.facingBefore ?? 0;
+            const toDeg     = item.facingAfter  ?? 0;
+            const s = document.getElementById('screen');
+            s.className = 'screen';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="turn-text">${arrow} ${direction}に${item.value}度 回転</div>
+                <div class="compass-wrap">
+                    ${buildCompass(fromDeg, toDeg)}
+                    <div class="compass-label">青い矢印の方向を向け</div>
+                </div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`;
+        }
+
+        function showStop(item, stepNum, total) {
+            const s = document.getElementById('screen');
+            s.className = 'screen';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="stop-emoji">⬛</div>
+                <div class="stop-text">止まれ</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`;
+        }
+
+        function showSwing(stepNum, total) {
+            const s = document.getElementById('screen');
+            s.className = 'screen flash';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="swing-emoji">💥</div>
+                <div class="swing-text">スイカを割れ！</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`;
+        }
+
+        function showComplete() {
+            const s = document.getElementById('screen');
+            s.className = 'screen';
+            s.innerHTML = `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="complete-emoji">🍉</div>
+                <div class="complete-text">ターン完了！</div>`;
+        }
+
+        // ─── Firebase リアルタイム監視 ──────────────────────────
+        let lastStep = -1;
+
+        onValue(ref(db, `suikawari/${teamKey}`), (snapshot) => {
+            const data = snapshot.val();
+
+            if (!data || data.status === 'idle') { showWaiting(); lastStep = -1; return; }
+            if (data.status === 'complete')       { showComplete(); return; }
+
+            if (data.status === 'executing') {
+                const step  = data.currentStep;
+                const q     = data.queue;
+                if (!q || step < 0 || step >= q.length) { showWaiting(); return; }
+
+                const item  = q[step];
+                const total = q.length;
+                const num   = step + 1;
+
+                // 新しいステップのときだけ描画＆TTS
+                if (step !== lastStep) {
+                    lastStep = step;
+                    speak(buildSpeechText(item));
+
+                    switch (item.type) {
+                        case 'forward':
+                        case 'back':   showMove(item, num, total);  break;
+                        case 'right':
+                        case 'left':   showTurn(item, num, total);  break;
+                        case 'stop':   showStop(item, num, total);  break;
+                        case 'swing':  showSwing(num, total);        break;
+                        default:       showWaiting();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

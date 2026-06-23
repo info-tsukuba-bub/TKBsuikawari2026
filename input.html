@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍉 スイカ割りコントローラー</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        h1 { text-align: center; font-size: 1.4rem; margin-bottom: 16px; color: #ff6b6b; }
+
+        /* チームタブ */
+        .team-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .team-tab { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .team-tab.a { background: #16213e; color: #4fc3f7; border: 2px solid #4fc3f7; }
+        .team-tab.b { background: #16213e; color: #f06292; border: 2px solid #f06292; }
+        .team-tab.active.a { background: #4fc3f7; color: #1a1a2e; }
+        .team-tab.active.b { background: #f06292; color: #1a1a2e; }
+
+        /* モード切り替え */
+        .mode-toggle { display: flex; background: #16213e; border-radius: 8px; padding: 4px; margin-bottom: 16px; }
+        .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; background: transparent; color: #888; font-weight: bold; }
+        .mode-btn.active { background: #0f3460; color: #fff; }
+
+        /* ブロックグリッド */
+        .block-section-label {
+            font-size: 0.72rem;
+            color: #555;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            margin-top: 10px;
+        }
+        .block-grid { display: grid; gap: 8px; margin-bottom: 4px; }
+        .block-grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .block-grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .block-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .block-btn {
+            padding: 14px 6px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+            transition: transform 0.1s, opacity 0.1s;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .block-btn:active { transform: scale(0.93); opacity: 0.8; }
+
+        /* 色：距離が長いほど濃い */
+        .block-btn.forward-1 { background: #1a6b3c; }
+        .block-btn.forward-2 { background: #165c34; }
+        .block-btn.forward-3 { background: #124d2b; }
+        .block-btn.forward-4 { background: #0d3e22; border: 2px solid #1a6b3c; }
+        .block-btn.back-1    { background: #6b3c1a; }
+        .block-btn.back-2    { background: #5c3316; }
+        .block-btn.back-3    { background: #4d2b12; }
+        .block-btn.back-4    { background: #3e220d; border: 2px solid #6b3c1a; }
+        .block-btn.right     { background: #1a3c6b; }
+        .block-btn.left      { background: #3c1a6b; }
+        .block-btn.stop      { background: #444; }
+        .block-btn.swing     { background: #8b0000; font-size: 1rem; padding: 18px; }
+
+        .cm-badge {
+            display: block;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.65);
+            margin-top: 2px;
+        }
+
+        /* コマンド入力 */
+        .command-input-area { display: none; margin-bottom: 16px; }
+        .command-input-area.visible { display: block; }
+        .command-hint { font-size: 0.75rem; color: #555; margin-bottom: 8px; font-family: monospace; line-height: 1.8; }
+        .command-input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #0f3460; background: #16213e; color: #fff; font-size: 1rem; font-family: monospace; margin-bottom: 8px; }
+        .command-add-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #0f3460; color: #fff; font-size: 1rem; cursor: pointer; font-weight: bold; }
+
+        /* キュー */
+        .queue-title { font-size: 0.8rem; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .queue-list { background: #16213e; border-radius: 8px; min-height: 56px; padding: 8px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+        .queue-item { display: flex; align-items: center; gap: 4px; background: #0f3460; border-radius: 6px; padding: 6px 10px; font-size: 0.82rem; }
+        .queue-item .num { color: #555; font-size: 0.72rem; }
+        .queue-item .del { background: none; border: none; color: #ff6b6b; cursor: pointer; padding: 0 0 0 4px; font-size: 1rem; line-height: 1; }
+        .queue-empty { color: #444; font-size: 0.85rem; padding: 8px; align-self: center; }
+
+        /* アクション */
+        .actions { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+        .btn-execute { padding: 18px; border: none; border-radius: 12px; background: #e63946; color: #fff; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        .btn-next    { padding: 18px; border: none; border-radius: 12px; background: #2a9d8f; color: #fff; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .btn-reset   { padding: 18px; border: none; border-radius: 12px; background: #444; color: #fff; font-size: 0.9rem; cursor: pointer; }
+        .status-bar  { text-align: center; padding: 10px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; background: #16213e; color: #888; letter-spacing: 0.05em; }
+        .status-bar.executing { color: #2a9d8f; font-weight: bold; }
+        .status-bar.complete  { color: #ffd700; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🍉 スイカ割りコントローラー</h1>
+
+    <div class="team-tabs">
+        <button class="team-tab a active" onclick="setTeam('a')">チームA</button>
+        <button class="team-tab b" onclick="setTeam('b')">チームB</button>
+    </div>
+
+    <div class="mode-toggle">
+        <button class="mode-btn active" id="modeBlock" onclick="setMode('block')">🟦 ブロック型</button>
+        <button class="mode-btn"        id="modeCmd"   onclick="setMode('command')">⌨️ コマンド型</button>
+    </div>
+
+    <!-- ブロック型 -->
+    <div id="blockArea">
+
+        <div class="block-section-label">↑ 前進（グリッド1マス = 40cm）</div>
+        <div class="block-grid block-grid-3">
+            <button class="block-btn forward-1" onclick="addBlock('↑ 前40cm','forward',40)">↑<span class="cm-badge">40cm</span></button>
+            <button class="block-btn forward-2" onclick="addBlock('↑ 前80cm','forward',80)">↑↑<span class="cm-badge">80cm</span></button>
+            <button class="block-btn forward-3" onclick="addBlock('↑ 前120cm','forward',120)">↑↑↑<span class="cm-badge">120cm</span></button>
+        </div>
+
+        <div class="block-section-label" style="margin-top:10px">↓ 後退</div>
+        <div class="block-grid block-grid-2" style="max-width:200px">
+            <button class="block-btn back-1" onclick="addBlock('↓ 後40cm','back',40)">↓<span class="cm-badge">40cm</span></button>
+        </div>
+
+        <div class="block-section-label" style="margin-top:10px">↻↺ 方向転換</div>
+        <div class="block-grid block-grid-4">
+            <button class="block-btn right" onclick="addBlock('↻ 右45°','right',45)">↻<br>右45°</button>
+            <button class="block-btn right" onclick="addBlock('↻ 右90°','right',90)">↻↻<br>右90°</button>
+            <button class="block-btn left"  onclick="addBlock('↺ 左45°','left',45)">↺<br>左45°</button>
+            <button class="block-btn left"  onclick="addBlock('↺ 左90°','left',90)">↺↺<br>左90°</button>
+        </div>
+
+        <div style="margin-top:10px">
+            <button class="block-btn swing" style="width:100%;padding:18px" onclick="addBlock('💥 swing！','swing',0)">💥 swing！</button>
+        </div>
+    </div>
+
+    <!-- コマンド型 -->
+    <div id="commandArea" class="command-input-area">
+        <div class="command-hint">
+            forward 40 &nbsp;/&nbsp; forward 80 &nbsp;/&nbsp; forward 120<br>
+            back 40 &nbsp;/&nbsp; right 90 &nbsp;/&nbsp; left 45 &nbsp;/&nbsp; swing<br>
+            <span style="color:#4fc3f7">グリッド1マス = 40cm（40/80/120cm のいずれかを指定）</span>
+        </div>
+        <input type="text" class="command-input" id="cmdInput" placeholder="例: forward 90" />
+        <button class="command-add-btn" onclick="addCommandText()">＋ コマンドを追加</button>
+    </div>
+
+    <!-- キュー -->
+    <div class="queue-title">コマンドキュー（最大5コマンド）</div>
+    <div class="queue-list" id="queueList">
+        <span class="queue-empty">コマンドを追加してください</span>
+    </div>
+
+    <!-- アクション -->
+    <div class="actions">
+        <button class="btn-execute" onclick="execute()">▶ 実行！</button>
+        <button class="btn-next"    onclick="nextStep()">次へ →</button>
+        <button class="btn-reset"   onclick="resetGame()">✕ リセット</button>
+    </div>
+
+    <div class="status-bar" id="statusBar">スタンバイ中</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+        // ============================================================
+        // ⚠️  ここにFirebaseの設定を貼り付けてください
+        // ============================================================
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDqdgtSJx00_hzKIP0nEOW6JfQVWgZ9plk",
+            authDomain:        "bub-suikawari.firebaseapp.com",
+            databaseURL:       "https://bub-suikawari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "bub-suikawari",
+            storageBucket:     "bub-suikawari.firebasestorage.app",
+            messagingSenderId: "115524577908",
+            appId:             "1:115524577908:web:dbcbe4cd300a184a287f21"
+        };
+        // ============================================================
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        let currentTeam  = 'a';
+        let queue        = [];
+        const MAX_STEPS  = 7;
+
+        // ---------- チーム切り替え ----------
+        window.setTeam = (team) => {
+            currentTeam = team;
+            document.querySelectorAll('.team-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.team-tab.${team}`).classList.add('active');
+            queue = [];
+            renderQueue();
+            listenTeam();
+        };
+
+        // ---------- モード切り替え ----------
+        window.setMode = (mode) => {
+            document.getElementById('modeBlock').classList.toggle('active', mode === 'block');
+            document.getElementById('modeCmd').classList.toggle('active',   mode === 'command');
+            document.getElementById('blockArea').style.display = mode === 'block' ? '' : 'none';
+            document.getElementById('commandArea').classList.toggle('visible', mode === 'command');
+        };
+
+        // ---------- ブロック追加 ----------
+        // value: cm距離（30/60/90/120）または角度（45/90）または0
+        window.addBlock = (label, type, value) => {
+            if (queue.length >= MAX_STEPS) { alert(`1ターン最大${MAX_STEPS}コマンドまでです！`); return; }
+            queue.push({ label, type, value });
+            renderQueue();
+        };
+
+        // ---------- コマンドテキスト追加 ----------
+        window.addCommandText = () => {
+            if (queue.length >= MAX_STEPS) { alert(`1ターン最大${MAX_STEPS}コマンドまでです！`); return; }
+            const input = document.getElementById('cmdInput');
+            const text  = input.value.trim();
+            if (!text) return;
+            const parsed = parseCommand(text);
+            if (parsed) {
+                queue.push(parsed);
+                renderQueue();
+                input.value = '';
+                input.focus();
+            } else {
+                alert('形式が正しくありません。\n例: forward 3 small / right 90 / swing');
+            }
+        };
+
+        const VALID_FORWARD_CM = [40, 80, 120];
+        const VALID_BACK_CM   = [40];
+
+        function parseCommand(text) {
+            const parts = text.toLowerCase().trim().split(/\s+/);
+            const cmd   = parts[0];
+            const val   = parseInt(parts[1]) || 0;
+
+            if (cmd === 'forward') {
+                if (!VALID_FORWARD_CM.includes(val)) {
+                    alert(`前進の距離は 40 / 80 / 120 のいずれかを指定してください。\n例: forward 80`);
+                    return null;
+                }
+                return { label: `↑ 前${val}cm`, type: 'forward', value: val };
+            }
+            if (cmd === 'back') {
+                if (val !== 40) {
+                    alert(`後退は 40cm のみです。\n例: back 40`);
+                    return null;
+                }
+                return { label: '↓ 後40cm', type: 'back', value: 40 };
+            }
+            const map = {
+                right: { label: `↻ 右${val}°`, type: 'right', value: val },
+                left:  { label: `↺ 左${val}°`, type: 'left',  value: val },
+                swing: { label: '💥 swing！',   type: 'swing', value: 0   },
+            };
+            return map[cmd] || null;
+        }
+
+        // ---------- キュー描画 ----------
+        function renderQueue() {
+            const list    = document.getElementById('queueList');
+            const counter = document.querySelector('.queue-title');
+            counter.textContent = `コマンドキュー（${queue.length}/${MAX_STEPS}）`;
+
+            if (queue.length === 0) {
+                list.innerHTML = '<span class="queue-empty">コマンドを追加してください</span>';
+                return;
+            }
+            list.innerHTML = queue.map((item, i) => `
+                <div class="queue-item">
+                    <span class="num">${i + 1}.</span>
+                    <span>${item.label}</span>
+                    <button class="del" onclick="removeItem(${i})">×</button>
+                </div>
+            `).join('');
+        }
+
+        window.removeItem = (index) => {
+            queue.splice(index, 1);
+            renderQueue();
+        };
+
+        // ---------- 実行（向き情報を付与してFirebaseへ） ----------
+        window.execute = async () => {
+            if (queue.length === 0) { alert('コマンドを追加してください！'); return; }
+            // 各コマンドに向き情報を付与
+            const enriched = enrichWithFacing(queue);
+            const key = `suikawari/team${currentTeam.toUpperCase()}`;
+            await set(ref(db, key), { queue: enriched, currentStep: 0, status: 'executing' });
+            setStatus(`実行中！ステップ 1 / ${enriched.length}`, 'executing');
+        };
+
+        // 向き情報を付与（0=北, 90=東, 180=南, 270=西）
+        function enrichWithFacing(q) {
+            // 前回のターンの最終向きをFirebaseから取得する代わりに、
+            // ここでは累積管理（ページ内変数で保持）
+            let facing = currentFacingDeg;
+            return q.map(item => {
+                const facingBefore = facing;
+                if (item.type === 'right') facing = (facing + item.value + 360) % 360;
+                if (item.type === 'left')  facing = (facing - item.value + 360) % 360;
+                return { ...item, facingBefore, facingAfter: facing };
+            });
+        }
+
+        // ---------- 次のステップ ----------
+        window.nextStep = async () => {
+            const key  = `suikawari/team${currentTeam.toUpperCase()}`;
+            const snap = await get(ref(db, key));
+            const data = snap.val();
+            if (!data || data.status !== 'executing') return;
+            const next = data.currentStep + 1;
+            if (next >= data.queue.length) {
+                // ターン終了：最終向きを保存
+                const lastCmd = data.queue[data.queue.length - 1];
+                currentFacingDeg = lastCmd?.facingAfter ?? currentFacingDeg;
+                await set(ref(db, `${key}/status`),      'complete');
+                await set(ref(db, `${key}/currentStep`), next);
+                setStatus('✅ ターン完了！次のロボットへ', 'complete');
+            } else {
+                await set(ref(db, `${key}/currentStep`), next);
+                setStatus(`実行中！ステップ ${next + 1} / ${data.queue.length}`, 'executing');
+            }
+        };
+
+        // ---------- リセット（ターン交代） ----------
+        window.resetGame = async () => {
+            queue = [];
+            renderQueue();
+            await set(ref(db, `suikawari/team${currentTeam.toUpperCase()}`), {
+                queue: [], currentStep: -1, status: 'idle', facingDeg: currentFacingDeg
+            });
+            setStatus('リセット完了（向きは引き継ぎ）', '');
+        };
+
+        // 向きをリセットしたい場合（全ゲームリセット）
+        window.fullReset = async () => {
+            currentFacingDeg = 0;
+            queue = [];
+            renderQueue();
+            await set(ref(db, `suikawari/team${currentTeam.toUpperCase()}`), {
+                queue: [], currentStep: -1, status: 'idle', facingDeg: 0
+            });
+            setStatus('全リセット完了', '');
+        };
+
+        function setStatus(msg, cls) {
+            const bar = document.getElementById('statusBar');
+            bar.textContent = msg;
+            bar.className   = `status-bar ${cls}`;
+        }
+
+        // ---------- 向き管理 ----------
+        let currentFacingDeg = 0; // 0=北（スイカ方向）
+
+        // ---------- リアルタイム監視 ----------
+        function listenTeam() {
+            onValue(ref(db, `suikawari/team${currentTeam.toUpperCase()}`), (snap) => {
+                const data = snap.val();
+                if (!data || data.status === 'idle') { setStatus('スタンバイ中', ''); return; }
+                if (data.status === 'complete')       { setStatus('✅ ターン完了！次のロボットへ', 'complete'); return; }
+                if (data.status === 'executing') {
+                    setStatus(`実行中！ステップ ${data.currentStep + 1} / ${data.queue?.length || 0}`, 'executing');
+                }
+            });
+        }
+
+        document.getElementById('cmdInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') window.addCommandText();
+        });
+
+        listenTeam();
+    </script>
+</body>
+</html>
