@@ -65,8 +65,8 @@
         .compass-label { font-size: 2.5vw; color: #888; letter-spacing: 0.1em; }
 
         /* ─── swing ─── */
-        .swing-emoji  { font-size: 26vw; line-height:1; margin-bottom: 2vh; animation: swing-anim 0.4s ease-out; }
-        .swing-text   { font-size: 8vw; font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,0.8); animation: swing-anim 0.4s ease-out; }
+        .swing-emoji  { font-size: 22vw; line-height:1; margin-bottom: 2vh; animation: swing-anim 0.4s ease-out; }
+        .swing-text   { font-size: 6vw; font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,0.8); animation: swing-anim 0.4s ease-out; }
         @keyframes swing-anim { 0%{transform:rotate(-25deg) scale(0.7);opacity:0.5} 60%{transform:rotate(15deg) scale(1.15)} 100%{transform:rotate(0deg) scale(1);opacity:1} }
 
         /* ─── 止まれ ─── */
@@ -248,16 +248,27 @@
                 <div class="waiting-text">スタンバイ中...</div>`);
         }
 
+        function getMoveLabel(type, value) {
+            if (type === 'forward') {
+                if (value === 40)  return { main: '前に１歩',     sub: '１マス分＝40cm' };
+                if (value === 80)  return { main: '前に大股１歩', sub: '２マス分＝80cm' };
+                if (value === 120) return { main: '前に超大股１歩', sub: '３マス分＝120cm' };
+            }
+            if (type === 'back') {
+                if (value === 40)  return { main: '後ろに１歩',   sub: '１マス分＝40cm' };
+            }
+            return { main: `${type} ${value}cm`, sub: '' };
+        }
+
         function showMove(item, stepNum, total) {
-            const arrow   = item.type === 'forward' ? '↑' : '↓';
-            const dir     = item.type === 'forward' ? '前に' : '後ろに';
-            const squares = item.value / 40;
-            const facing  = item.facingAfter ?? 0;
+            const arrow  = item.type === 'forward' ? '↑' : '↓';
+            const label  = getMoveLabel(item.type, item.value);
+            const facing = item.facingAfter ?? 0;
             setScreens('screen', `
                 <div class="team-label team-${team}">${teamName}</div>
                 <div class="move-arrow">${arrow}</div>
-                <div class="move-text">${dir}${item.value}cm</div>
-                <div class="move-size">${squares}マス分（グリッド1マス = 40cm）</div>
+                <div class="move-text">${label.main}</div>
+                <div class="move-size">${label.sub}</div>
                 <div style="margin-top:2vh">${buildMovingCompass(facing)}</div>
                 <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
         }

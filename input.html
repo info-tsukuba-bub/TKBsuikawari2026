@@ -120,20 +120,24 @@
 
         <div class="block-section-label">↑ 前進（グリッド1マス = 40cm）</div>
         <div class="block-grid block-grid-3">
-            <button class="block-btn forward-1" onclick="addBlock('↑ 前40cm','forward',40)">↑<span class="cm-badge">40cm</span></button>
-            <button class="block-btn forward-2" onclick="addBlock('↑ 前80cm','forward',80)">↑↑<span class="cm-badge">80cm</span></button>
-            <button class="block-btn forward-3" onclick="addBlock('↑ 前120cm','forward',120)">↑↑↑<span class="cm-badge">120cm</span></button>
+            <button class="block-btn forward-1" onclick="addBlock('↑ 前に１歩','forward',40)">↑<span class="cm-badge">１歩 40cm</span></button>
+            <button class="block-btn forward-2" onclick="addBlock('↑ 前に大股１歩','forward',80)">↑↑<span class="cm-badge">大股 80cm</span></button>
+            <button class="block-btn forward-3" onclick="addBlock('↑ 前に超大股１歩','forward',120)">↑↑↑<span class="cm-badge">超大股 120cm</span></button>
         </div>
 
         <div class="block-section-label" style="margin-top:10px">↓ 後退</div>
         <div class="block-grid block-grid-2" style="max-width:200px">
-            <button class="block-btn back-1" onclick="addBlock('↓ 後40cm','back',40)">↓<span class="cm-badge">40cm</span></button>
+            <button class="block-btn back-1" onclick="addBlock('↓ 後ろに１歩','back',40)">↓<span class="cm-badge">１歩 40cm</span></button>
         </div>
 
         <div class="block-section-label" style="margin-top:10px">↻↺ 方向転換</div>
-        <div class="block-grid block-grid-4">
+        <div class="block-grid" style="grid-template-columns: repeat(3,1fr);">
+            <button class="block-btn right" onclick="addBlock('↻ 右30°','right',30)">↻<br>右30°</button>
             <button class="block-btn right" onclick="addBlock('↻ 右45°','right',45)">↻<br>右45°</button>
             <button class="block-btn right" onclick="addBlock('↻ 右90°','right',90)">↻↻<br>右90°</button>
+        </div>
+        <div class="block-grid" style="grid-template-columns: repeat(3,1fr); margin-top:8px;">
+            <button class="block-btn left"  onclick="addBlock('↺ 左30°','left',30)">↺<br>左30°</button>
             <button class="block-btn left"  onclick="addBlock('↺ 左45°','left',45)">↺<br>左45°</button>
             <button class="block-btn left"  onclick="addBlock('↺ 左90°','left',90)">↺↺<br>左90°</button>
         </div>
@@ -250,14 +254,15 @@
                     alert(`前進の距離は 40 / 80 / 120 のいずれかを指定してください。\n例: forward 80`);
                     return null;
                 }
-                return { label: `↑ 前${val}cm`, type: 'forward', value: val };
+                const fwdLabels = { 40: '前に１歩', 80: '前に大股１歩', 120: '前に超大股１歩' };
+                return { label: `↑ ${fwdLabels[val]}`, type: 'forward', value: val };
             }
             if (cmd === 'back') {
                 if (val !== 40) {
                     alert(`後退は 40cm のみです。\n例: back 40`);
                     return null;
                 }
-                return { label: '↓ 後40cm', type: 'back', value: 40 };
+                return { label: '↓ 後ろに１歩', type: 'back', value: 40 };
             }
             const map = {
                 right: { label: `↻ 右${val}°`, type: 'right', value: val },
