@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍉 かんたんコントローラー</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 0.8rem;
+            color: #555;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .btn {
+            padding: 28px 12px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            color: #fff;
+            line-height: 1.4;
+            text-align: center;
+            transition: transform 0.1s, opacity 0.1s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn:active { transform: scale(0.93); opacity: 0.75; }
+
+        .btn-forward  { background: linear-gradient(135deg, #1a6b3c, #2ecc71); grid-column: span 2; font-size: 1.3rem; }
+        .btn-back     { background: linear-gradient(135deg, #6b3c1a, #e67e22); }
+        .btn-right    { background: linear-gradient(135deg, #1a3c6b, #3498db); }
+        .btn-left     { background: linear-gradient(135deg, #3c1a6b, #9b59b6); }
+        .btn-dance    { background: linear-gradient(135deg, #6b1a6b, #e91e63); }
+        .btn-stop     { background: linear-gradient(135deg, #444, #777); grid-column: span 2; }
+
+        .status {
+            margin-top: 24px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            background: #16213e;
+            font-size: 1rem;
+            text-align: center;
+            color: #888;
+            width: 100%;
+            max-width: 360px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status.sent { color: #2ecc71; font-weight: bold; }
+
+        .team-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .team-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid;
+            border-radius: 8px;
+            background: #16213e;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            max-width: 160px;
+        }
+        .team-btn.a { color: #4fc3f7; border-color: #4fc3f7; }
+        .team-btn.b { color: #f06292; border-color: #f06292; }
+        .team-btn.active.a { background: #4fc3f7; color: #1a1a2e; }
+        .team-btn.active.b { background: #f06292; color: #1a1a2e; }
+    </style>
+</head>
+<body>
+    <h1>🍉 かんたんコントローラー</h1>
+    <p class="subtitle">ボタンをおすと ロボットがうごくよ！</p>
+
+    <div class="team-toggle">
+        <button class="team-btn a active" onclick="setTeam('a')">チームA</button>
+        <button class="team-btn b"        onclick="setTeam('b')">チームB</button>
+    </div>
+
+    <div class="grid">
+        <button class="btn btn-forward" onclick="send('forward', 40, 'まえにすすむ！ ↑')">
+            ↑<br>まえに すすむ
+        </button>
+
+        <button class="btn btn-left"  onclick="send('left', 90, 'ひだりにまわる！ ↺')">
+            ↺<br>ひだりに まわる
+        </button>
+        <button class="btn btn-right" onclick="send('right', 90, 'みぎにまわる！ ↻')">
+            ↻<br>みぎに まわる
+        </button>
+
+        <button class="btn btn-back"  onclick="send('back', 40, 'うしろにすすむ！ ↓')">
+            ↓<br>うしろに すすむ
+        </button>
+        <button class="btn btn-dance" onclick="send('dance', 0, 'ダンスしろ！ 💃')">
+            💃<br>ダンスする
+        </button>
+
+        <button class="btn btn-stop"  onclick="send('stop', 0, 'とまれ！ ⬛')">
+            ⬛<br>とまる
+        </button>
+    </div>
+
+    <div class="status" id="status">ボタンをおしてね</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDqdgtSJx00_hzKIP0nEOW6JfQVWgZ9plk",
+            authDomain:        "bub-suikawari.firebaseapp.com",
+            databaseURL:       "https://bub-suikawari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "bub-suikawari",
+            storageBucket:     "bub-suikawari.firebasestorage.app",
+            messagingSenderId: "115524577908",
+            appId:             "1:115524577908:web:dbcbe4cd300a184a287f21"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        let currentTeam = 'a';
+
+        window.setTeam = (team) => {
+            currentTeam = team;
+            document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.team-btn.${team}`).classList.add('active');
+        };
+
+        window.send = async (type, value, statusText) => {
+            const key = `suikawari/team${currentTeam.toUpperCase()}`;
+            const item = { type, value, label: statusText, facingBefore: 0, facingAfter: 0 };
+            await set(ref(db, key), {
+                queue: [item],
+                currentStep: 0,
+                status: 'executing'
+            });
+            const s = document.getElementById('status');
+            s.textContent = statusText;
+            s.className = 'status sent';
+            setTimeout(() => {
+                s.textContent = 'ボタンをおしてね';
+                s.className = 'status';
+            }, 1500);
+        };
+    </script>
+</body>
+</html>
