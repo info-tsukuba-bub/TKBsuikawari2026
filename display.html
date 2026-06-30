@@ -48,34 +48,38 @@
             text-align: center; font-size: 2vw; color: #444; letter-spacing: 0.2em;
         }
 
-        /* ─── 待機 ─── */
-        .waiting-text { font-size: 4vw; color: #333; animation: pulse 2s ease-in-out infinite; }
+        /* ─── まちちゅう ─── */
+        .waiting-text { font-size: 3.5vw; color: #333; animation: pulse 2s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
-        /* ─── 移動コマンド（forward/back） ─── */
-        .move-arrow   { font-size: 22vw; line-height:1; margin-bottom: 2vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
-        .move-text    { font-size: 7vw; font-weight: 900; color: #fff; margin-bottom: 1vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
-        .move-size    { font-size: 3vw; color: #aaa; letter-spacing: 0.1em; }
+        /* ─── うごきコマンド（forward/back） ─── */
+        .move-arrow   { font-size: 18vw; line-height:1; margin-bottom: 1.5vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .move-text    { font-size: 5.5vw; font-weight: 900; color: #fff; margin-bottom: 0.8vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .move-size    { font-size: 2.5vw; color: #aaa; letter-spacing: 0.05em; }
         @keyframes pop { 0%{transform:scale(0.4);opacity:0} 100%{transform:scale(1);opacity:1} }
 
-        /* ─── 方向転換コマンド（right/left）+ コンパス ─── */
-        .turn-text     { font-size: 6vw; font-weight: 900; color: #fff; margin-bottom: 2vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        /* ─── むきをかえる（right/left）+ コンパス ─── */
+        .turn-text     { font-size: 5vw; font-weight: 900; color: #fff; margin-bottom: 1.5vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
         .compass-wrap  { display: flex; flex-direction: column; align-items: center; gap: 1vh; }
-        .compass-svg   { width: min(36vw, 40vh); height: min(36vw, 40vh); }
-        .compass-label { font-size: 2.5vw; color: #888; letter-spacing: 0.1em; }
+        .compass-svg   { width: min(32vw, 36vh); height: min(32vw, 36vh); }
+        .compass-label { font-size: 2.2vw; color: #888; letter-spacing: 0.05em; }
 
         /* ─── swing ─── */
-        .swing-emoji  { font-size: 22vw; line-height:1; margin-bottom: 2vh; animation: swing-anim 0.4s ease-out; }
-        .swing-text   { font-size: 6vw; font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,0.8); animation: swing-anim 0.4s ease-out; }
+        .swing-emoji  { font-size: 18vw; line-height:1; margin-bottom: 1.5vh; animation: swing-anim 0.4s ease-out; }
+        .swing-text   { font-size: 5vw; font-weight: 900; color: #ff4444; text-shadow: 0 0 40px rgba(255,68,68,0.8); animation: swing-anim 0.4s ease-out; }
         @keyframes swing-anim { 0%{transform:rotate(-25deg) scale(0.7);opacity:0.5} 60%{transform:rotate(15deg) scale(1.15)} 100%{transform:rotate(0deg) scale(1);opacity:1} }
 
-        /* ─── 止まれ ─── */
-        .stop-emoji   { font-size: 22vw; line-height:1; margin-bottom: 2vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
-        .stop-text    { font-size: 7vw; font-weight: 900; color: #ffd700; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        /* ─── とくべつコマンド共通 ─── */
+        .special-emoji { font-size: 18vw; line-height:1; margin-bottom: 1.5vh; animation: pop 0.3s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .special-text  { font-size: 5.5vw; font-weight: 900; color: #fff; animation: pop 0.3s cubic-bezier(0.175,0.885,0.32,1.275); }
 
-        /* ─── 完了 ─── */
-        .complete-emoji { font-size: 14vw; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
-        .complete-text  { font-size: 5.5vw; font-weight: 900; color: #ffd700; margin-top: 2vh; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275) 0.1s both; }
+        /* ─── とまれ ─── */
+        .stop-emoji   { font-size: 18vw; line-height:1; margin-bottom: 1.5vh; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .stop-text    { font-size: 5.5vw; font-weight: 900; color: #ffd700; animation: pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275); }
+
+        /* ─── ターンおわり ─── */
+        .complete-emoji { font-size: 12vw; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .complete-text  { font-size: 4.5vw; font-weight: 900; color: #ffd700; margin-top: 1.5vh; animation: bounce 0.5s cubic-bezier(0.175,0.885,0.32,1.275) 0.1s both; }
         @keyframes bounce { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
 
         /* ─── swing フラッシュ背景 ─── */
@@ -146,12 +150,17 @@
 
         function buildSpeechText(item) {
             switch (item.type) {
-                case 'forward': return `前に${item.value}センチ`;
-                case 'back':    return `後ろに${item.value}センチ`;
-                case 'right':   return `右に${item.value}度、回転`;
-                case 'left':    return `左に${item.value}度、回転`;
-                case 'stop':    return '止まれ';
-                case 'swing':   return 'スイカを割れ！';
+                case 'forward': {
+                    const w = { 40:'まえに１ほ', 80:'まえに おおまた１ほ', 120:'まえに ちょうおおまた１ほ' };
+                    return w[item.value] || `まえに${item.value}センチ`;
+                }
+                case 'back':    return `うしろに${item.value}センチ`;
+                case 'right':   return `みぎに${item.value}ど、まわれ`;
+                case 'left':    return `ひだりに${item.value}ど、まわれ`;
+                case 'swing':   return 'スイカを われ！';
+                case 'squat':   return 'しゃがめ！';
+                case 'dance':   return 'ダンスしろ！';
+                case 'spin':    return 'その場で いっかいてん！';
                 default:        return item.label || '';
             }
         }
@@ -245,17 +254,17 @@
         function showWaiting() {
             setScreens('screen', `
                 <div class="team-label team-${team}">${teamName}</div>
-                <div class="waiting-text">スタンバイ中...</div>`);
+                <div class="waiting-text">まっているよ...</div>`);
         }
 
         function getMoveLabel(type, value) {
             if (type === 'forward') {
-                if (value === 40)  return { main: '前に１歩',     sub: '１マス分＝40cm' };
-                if (value === 80)  return { main: '前に大股１歩', sub: '２マス分＝80cm' };
-                if (value === 120) return { main: '前に超大股１歩', sub: '３マス分＝120cm' };
+                if (value === 40)  return { main: 'まえに１ほ',         sub: '１マス分＝40cm' };
+                if (value === 80)  return { main: 'まえに おおまた１ほ', sub: '２マス分＝80cm' };
+                if (value === 120) return { main: 'まえに ちょうおおまた１ほ', sub: '３マス分＝120cm' };
             }
             if (type === 'back') {
-                if (value === 40)  return { main: '後ろに１歩',   sub: '１マス分＝40cm' };
+                if (value === 40)  return { main: 'うしろに１ほ',       sub: '１マス分＝40cm' };
             }
             return { main: `${type} ${value}cm`, sub: '' };
         }
@@ -275,15 +284,15 @@
 
         function showTurn(item, stepNum, total) {
             const arrow     = item.type === 'right' ? '↻' : '↺';
-            const direction = item.type === 'right' ? '右' : '左';
+            const direction = item.type === 'right' ? 'みぎ' : 'ひだり';
             const fromDeg   = item.facingBefore ?? 0;
             const toDeg     = item.facingAfter  ?? 0;
             setScreens('screen', `
                 <div class="team-label team-${team}">${teamName}</div>
-                <div class="turn-text">${arrow} ${direction}に${item.value}度 回転</div>
+                <div class="turn-text">${arrow} ${direction}に${item.value}ど まわれ</div>
                 <div class="compass-wrap">
                     ${buildCompass(fromDeg, toDeg)}
-                    <div class="compass-label">青い矢印の方向を向け</div>
+                    <div class="compass-label">あおいやじるしの ほうをむけ</div>
                 </div>
                 <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
         }
@@ -300,7 +309,31 @@
             setScreens('screen flash', `
                 <div class="team-label team-${team}">${teamName}</div>
                 <div class="swing-emoji">💥</div>
-                <div class="swing-text">スイカを割れ！</div>
+                <div class="swing-text">スイカを われ！</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
+        }
+
+        function showSquat(stepNum, total) {
+            setScreens('screen', `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="special-emoji">🦆</div>
+                <div class="special-text">しゃがめ！</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
+        }
+
+        function showDance(stepNum, total) {
+            setScreens('screen', `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="special-emoji">💃</div>
+                <div class="special-text">ダンスしろ！</div>
+                <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
+        }
+
+        function showSpin(stepNum, total) {
+            setScreens('screen', `
+                <div class="team-label team-${team}">${teamName}</div>
+                <div class="special-emoji">🌀</div>
+                <div class="special-text">その場で いっかいてん！</div>
                 <div class="step-counter">STEP ${stepNum} / ${total}</div>`);
         }
 
@@ -308,7 +341,7 @@
             setScreens('screen', `
                 <div class="team-label team-${team}">${teamName}</div>
                 <div class="complete-emoji">🍉</div>
-                <div class="complete-text">ターン完了！</div>`);
+                <div class="complete-text">ターンおわり！</div>`);
         }
 
         // ─── Firebase リアルタイム監視 ──────────────────────────
@@ -336,11 +369,14 @@
 
                     switch (item.type) {
                         case 'forward':
-                        case 'back':   showMove(item, num, total);  break;
+                        case 'back':   showMove(item, num, total);   break;
                         case 'right':
-                        case 'left':   showTurn(item, num, total);  break;
-                        case 'stop':   showStop(item, num, total);  break;
-                        case 'swing':  showSwing(num, total);        break;
+                        case 'left':   showTurn(item, num, total);   break;
+                        case 'stop':   showStop(item, num, total);   break;
+                        case 'swing':  showSwing(num, total);         break;
+                        case 'squat':  showSquat(num, total);         break;
+                        case 'dance':  showDance(num, total);         break;
+                        case 'spin':   showSpin(num, total);          break;
                         default:       showWaiting();
                     }
                 }

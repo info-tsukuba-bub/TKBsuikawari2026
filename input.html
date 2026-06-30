@@ -118,60 +118,68 @@
     <!-- ブロック型 -->
     <div id="blockArea">
 
-        <div class="block-section-label">↑ 前進（グリッド1マス = 40cm）</div>
+        <div class="block-section-label">↑ まえに すすむ（1マス = 40cm）</div>
         <div class="block-grid block-grid-3">
-            <button class="block-btn forward-1" onclick="addBlock('↑ 前に１歩','forward',40)">↑<span class="cm-badge">１歩 40cm</span></button>
-            <button class="block-btn forward-2" onclick="addBlock('↑ 前に大股１歩','forward',80)">↑↑<span class="cm-badge">大股 80cm</span></button>
-            <button class="block-btn forward-3" onclick="addBlock('↑ 前に超大股１歩','forward',120)">↑↑↑<span class="cm-badge">超大股 120cm</span></button>
+            <button class="block-btn forward-1" onclick="addBlock('↑ まえに１ほ','forward',40)">↑<span class="cm-badge">１ほ 40cm</span></button>
+            <button class="block-btn forward-2" onclick="addBlock('↑ まえに おおまた１ほ','forward',80)">↑↑<span class="cm-badge">おおまた 80cm</span></button>
+            <button class="block-btn forward-3" onclick="addBlock('↑ まえに ちょうおおまた１ほ','forward',120)">↑↑↑<span class="cm-badge">ちょうおおまた 120cm</span></button>
         </div>
 
-        <div class="block-section-label" style="margin-top:10px">↓ 後退</div>
+        <div class="block-section-label" style="margin-top:10px">↓ うしろに さがる</div>
         <div class="block-grid block-grid-2" style="max-width:200px">
-            <button class="block-btn back-1" onclick="addBlock('↓ 後ろに１歩','back',40)">↓<span class="cm-badge">１歩 40cm</span></button>
+            <button class="block-btn back-1" onclick="addBlock('↓ うしろに１ほ','back',40)">↓<span class="cm-badge">１ほ 40cm</span></button>
         </div>
 
-        <div class="block-section-label" style="margin-top:10px">↻↺ 方向転換</div>
+        <div class="block-section-label" style="margin-top:10px">↻↺ むきをかえる</div>
         <div class="block-grid" style="grid-template-columns: repeat(3,1fr);">
-            <button class="block-btn right" onclick="addBlock('↻ 右30°','right',30)">↻<br>右30°</button>
-            <button class="block-btn right" onclick="addBlock('↻ 右45°','right',45)">↻<br>右45°</button>
-            <button class="block-btn right" onclick="addBlock('↻ 右90°','right',90)">↻↻<br>右90°</button>
+            <button class="block-btn right" onclick="addBlock('↻ みぎ30°','right',30)">↻<br>みぎ30°</button>
+            <button class="block-btn right" onclick="addBlock('↻ みぎ45°','right',45)">↻<br>みぎ45°</button>
+            <button class="block-btn right" onclick="addBlock('↻ みぎ90°','right',90)">↻↻<br>みぎ90°</button>
         </div>
         <div class="block-grid" style="grid-template-columns: repeat(3,1fr); margin-top:8px;">
-            <button class="block-btn left"  onclick="addBlock('↺ 左30°','left',30)">↺<br>左30°</button>
-            <button class="block-btn left"  onclick="addBlock('↺ 左45°','left',45)">↺<br>左45°</button>
-            <button class="block-btn left"  onclick="addBlock('↺ 左90°','left',90)">↺↺<br>左90°</button>
+            <button class="block-btn left"  onclick="addBlock('↺ ひだり30°','left',30)">↺<br>ひだり30°</button>
+            <button class="block-btn left"  onclick="addBlock('↺ ひだり45°','left',45)">↺<br>ひだり45°</button>
+            <button class="block-btn left"  onclick="addBlock('↺ ひだり90°','left',90)">↺↺<br>ひだり90°</button>
         </div>
 
-        <div style="margin-top:10px">
-            <button class="block-btn swing" style="width:100%;padding:18px" onclick="addBlock('💥 swing！','swing',0)">💥 swing！</button>
+        <div class="block-section-label" style="margin-top:10px">🎮 とくべつコマンド</div>
+        <div class="block-grid block-grid-3" style="margin-bottom:8px;">
+            <button class="block-btn" style="background:#5c6bc0;font-size:0.85rem;padding:14px 4px;" onclick="addBlock('🦆 しゃがむ','squat',0)">🦆<span class="cm-badge">しゃがむ</span></button>
+            <button class="block-btn" style="background:#7b1fa2;font-size:0.85rem;padding:14px 4px;" onclick="addBlock('💃 ダンス','dance',0)">💃<span class="cm-badge">ダンス</span></button>
+            <button class="block-btn" style="background:#00838f;font-size:0.85rem;padding:14px 4px;" onclick="addBlock('🌀 いっかいてん','spin',0)">🌀<span class="cm-badge">いっかいてん</span></button>
+        </div>
+
+        <div style="margin-top:4px">
+            <button class="block-btn swing" style="width:100%;padding:18px" onclick="addBlock('💥 スイカをわれ！','swing',0)">💥 スイカをわれ！</button>
         </div>
     </div>
 
     <!-- コマンド型 -->
     <div id="commandArea" class="command-input-area">
         <div class="command-hint">
-            forward 40 &nbsp;/&nbsp; forward 80 &nbsp;/&nbsp; forward 120<br>
-            back 40 &nbsp;/&nbsp; right 90 &nbsp;/&nbsp; left 45 &nbsp;/&nbsp; swing<br>
-            <span style="color:#4fc3f7">グリッド1マス = 40cm（40/80/120cm のいずれかを指定）</span>
+            forward 40 / forward 80 / forward 120<br>
+            back 40 / right 90 / left 45<br>
+            swing / squat / dance / spin<br>
+            <span style="color:#4fc3f7">1マス = 40cm（40 / 80 / 120 のどれかをえらぶ）</span>
         </div>
-        <input type="text" class="command-input" id="cmdInput" placeholder="例: forward 90" />
-        <button class="command-add-btn" onclick="addCommandText()">＋ コマンドを追加</button>
+        <input type="text" class="command-input" id="cmdInput" placeholder="れい: forward 40" />
+        <button class="command-add-btn" onclick="addCommandText()">＋ コマンドをついか</button>
     </div>
 
     <!-- キュー -->
-    <div class="queue-title">コマンドキュー（最大5コマンド）</div>
+    <div class="queue-title">コマンドリスト（さいだい7つ）</div>
     <div class="queue-list" id="queueList">
-        <span class="queue-empty">コマンドを追加してください</span>
+        <span class="queue-empty">コマンドをついかしてね</span>
     </div>
 
     <!-- アクション -->
     <div class="actions">
-        <button class="btn-execute" onclick="execute()">▶ 実行！</button>
-        <button class="btn-next"    onclick="nextStep()">次へ →</button>
+        <button class="btn-execute" onclick="execute()">▶ じっこう！</button>
+        <button class="btn-next"    onclick="nextStep()">つぎへ →</button>
         <button class="btn-reset"   onclick="resetGame()">✕ リセット</button>
     </div>
 
-    <div class="status-bar" id="statusBar">スタンバイ中</div>
+    <div class="status-bar" id="statusBar">スタンバイちゅう</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
@@ -265,9 +273,12 @@
                 return { label: '↓ 後ろに１歩', type: 'back', value: 40 };
             }
             const map = {
-                right: { label: `↻ 右${val}°`, type: 'right', value: val },
-                left:  { label: `↺ 左${val}°`, type: 'left',  value: val },
-                swing: { label: '💥 swing！',   type: 'swing', value: 0   },
+                right:  { label: `↻ みぎ${val}°`,    type: 'right',  value: val },
+                left:   { label: `↺ ひだり${val}°`,  type: 'left',   value: val },
+                swing:  { label: '💥 スイカをわれ！', type: 'swing',  value: 0   },
+                squat:  { label: '🦆 しゃがむ',       type: 'squat',  value: 0   },
+                dance:  { label: '💃 ダンス',          type: 'dance',  value: 0   },
+                spin:   { label: '🌀 いっかいてん',    type: 'spin',   value: 0   },
             };
             return map[cmd] || null;
         }
